@@ -9,34 +9,43 @@ import (
 )
 
 type World struct {
-	TileData      [][]field.Field
-	Circumference int
-	Resolution    int
-	HtmDepth      int
-	LongSpan      int
-	LatSpan       int
+	TileData       [][]field.Field
+	RegionCoverage RegionCoverer
+	Circumference  int
+	Resolution     int
+	LongSpan       int
+	LatSpan        int
+}
+
+type RegionCoverer struct {
+	MinLevel int // the minimum cell level to be used.
+	MaxLevel int // the maximum cell level to be used.
+	LevelMod int // the LevelMod to be used.
+	MaxCells int // the maximum desired number of cells in the approximation.
 }
 
 // Factory function
-func NewWorld(circumference, resolution int, debug bool) *World {
+func NewWorld(circumference, resolution, max_level int, debug bool) *World {
+	world := new(World)
 	// Calculate the world geometry based on resolution
-	long_span := int(float32(circumference) / float32(resolution))
-	lat_span := int((float32(circumference)) / 2.0 / float32(resolution))
-	// Calculate the triangle depth needed.
-	// 24,901 needs 8*4^6 (32,768) data points for a total depth of 7.
-	// logarithm of x base b = log(x)/log(b)
-	htm_depth := int(math.Ceil(math.Log(float64(circumference)/float64(resolution)/8.0)/math.Log(4.0))) + 1
+	long_span := int(float64(circumference) / float64(resolution))
+	lat_span := int((float64(circumference)) / 2.0 / float64(resolution))
 	fields := utility.Make2D[field.Field](long_span, lat_span)
-	world := &World{TileData: fields,
-		Circumference: circumference, Resolution: resolution, HtmDepth: htm_depth,
-		LongSpan: long_span, LatSpan: lat_span}
+
+	// Populate the world...
+	world.TileData = fields
+	world.RegionCoverage.MaxLevel = max_level
+	world.Circumference = circumference
+	world.Resolution = resolution
+	world.LongSpan = long_span
+	world.LatSpan = lat_span
 	SetMeanAltitude(world, debug)
 	return world
 }
 
 func SetMeanAltitude(world *World, debug bool) *World {
 	// Set the altitude field to a perfect sphere
-	mean_alt := float32(world.Circumference) / (2.0 * math.Pi)
+	mean_alt := float64(world.Circumference) / (2.0 * math.Pi)
 	for lng := 0; lng < world.LongSpan; lng++ {
 		for lat := 0; lat < world.LatSpan; lat++ {
 			world.TileData[lng][lat].Altitude = mean_alt

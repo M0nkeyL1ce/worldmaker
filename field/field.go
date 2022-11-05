@@ -2,5 +2,5 @@
 package field
 
 type Field struct {
-	Altitude float32
+	Altitude float64
 }
