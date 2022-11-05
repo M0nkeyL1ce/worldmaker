@@ -7,29 +7,27 @@ import (
 )
 
 type Plate struct {
+	plateId
 }
 
-type Plates struct {
-	plate []Plate
-}
+var Plates []Plate
 
 // Factory function
-func NewPlates(world World) *Plates {
-	return &Plates{}
+func NewPlates(world world.World) *Plates {
+	return &Plates
 }
 
 // Getters
-func Plates() *plates.Plates {
+// Get the plates for a world at a location.
+func (w *world.World) Plates() *Plates {
 	// optionally do some bounds checking here
-	y_norm := (w.LatSpan / 2) + y
-	return &w.field[x*w.LatSpan+y_norm]
+	return &Plates
 }
 
 // Setter
-func (w *world.World) SetPlate(x int, y int, value field.Field) {
+func (w *World) SetField(x int, y int, value field.Field) {
 	// optionally do some bounds checking here
-	y_norm := (w.LatSpan / 2) + y
-	w.Field.field[x*w.LatSpan+y_norm] = value
+	w.TileData[x][y] = value
 }
 
 func (w *Plates) ToGIF() {
